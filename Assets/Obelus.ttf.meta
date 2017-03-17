@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 7d42402b28152354182f270ec4437f90
+timeCreated: 1488450996
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Obelus
+  fontNames:
+  - Obelus
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
