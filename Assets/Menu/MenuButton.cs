@@ -12,12 +12,29 @@ public class MenuButton : InteractableObject {
     Material mat;
     public Texture textureUp, textureDown;
     public bool onIt;
+    public bool pressed;
     
     void Start()
     {
-        //клонируем материал, чттобы мы могли его спокойно изменять во время игры
-        mat = new Material(transform.GetChild(0).GetComponent<MeshRenderer>().material);
-        transform.GetChild(0).GetComponent<MeshRenderer>().material = mat;
+        if (mat == null)
+        {
+            //клонируем материал, чттобы мы могли его спокойно изменять во время игры
+            mat = new Material(transform.GetChild(0).GetComponent<MeshRenderer>().material);
+            transform.GetChild(0).GetComponent<MeshRenderer>().material = mat;
+        }
+    }
+
+    public void SetTextureUp(Texture t)
+    {
+        if(mat == null)
+        {
+            Start();
+        }
+        textureUp = t;
+        if(transform.position == posUp)
+        {
+            mat.SetTexture("_MainTex", textureUp);
+        }
     }
 
     public override void Interact()
@@ -36,7 +53,6 @@ public class MenuButton : InteractableObject {
     public override void PreInteract()
     {
         base.PreInteract();
-        Press();
         onIt = true;
     }
 
@@ -52,9 +68,13 @@ public class MenuButton : InteractableObject {
 
     void Update()
     {
-        if(!onIt)
+        if(!onIt && !pressed)
         {
             Unpress();
+        }
+        else
+        {
+            Press();
         }
         onIt = false;
     }

@@ -1,9 +1,8 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
+using GoogleMobileAds.Api;
 
 /// <summary>
 /// Главный контроллер, который управляет сменой экранов, инпутом и сохранением рекордов
@@ -18,16 +17,76 @@ public class MainController : MonoBehaviour {
     public Camera currentCamera;
     public bool inputTime;
     public IController[] controllers;
-
+    InterstitialAd ad;
+    public int adTimer;
+    int adTime;
+    string adHandle = "ca-app-pub-5377701829054453/9318814921";
     float sTime, sTimer;
+
+    public void LoadAd(object sender, EventArgs args)
+    {
+        ad = new InterstitialAd("ca-app-pub-5377701829054453/9318814921");
+        AdRequest request = new AdRequest.Builder().Build();
+        ad.LoadAd(request);
+    }
+
+    public void ShowAd()
+    {
+        if (ad.IsLoaded())
+        {
+            ad.OnAdClosed += LoadAd;
+            ad.Show();
+        }
+    }
+
+    void OnApplicationPause()
+    {
+        if(currentScreen == GameController.controller && GameController.controller != null)
+        {
+            if(!GameController.controller.paused)
+            {
+                GameController.controller.Pause();
+            }
+        }
+    }
+
+    void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus)
+        {
+            if (currentScreen == GameController.controller && GameController.controller != null)
+            {
+                if (!GameController.controller.paused)
+                {
+                    GameController.controller.Pause();
+                }
+            }
+        }
+    }
+
+    void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            if (currentScreen == GameController.controller && GameController.controller != null)
+            {
+                if (!GameController.controller.paused)
+                {
+                    GameController.controller.Pause();
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Функция обрабатывающая инпут
     /// </summary>
     void InputController()
     {
+        if (inputTime)
+        {
 #if UNITY_EDITOR
-        if(Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp(0))
             {
                 Ray r = currentCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -38,21 +97,51 @@ public class MainController : MonoBehaviour {
                 }
             }
 #endif
-        if (Input.touchCount > 0)
-        {
-            Ray r = currentCamera.ScreenPointToRay(Input.GetTouch(0).position);
-            RaycastHit hit;
-            var layer = 1 << 8;
-            if (Physics.Raycast(r, out hit, Mathf.Infinity, layer))
+            if (Input.touchCount > 0)
             {
-                if (Input.GetTouch(0).phase == TouchPhase.Ended)
+                Ray r = currentCamera.ScreenPointToRay(Input.GetTouch(0).position);
+                RaycastHit hit;
+                var layer = 1 << 8;
+                if (Physics.Raycast(r, out hit, Mathf.Infinity, layer))
                 {
-                    hit.collider.GetComponent<InteractableObject>().Interact();
+                    if (Input.GetTouch(0).phase == TouchPhase.Ended)
+                    {
+                        hit.collider.GetComponent<InteractableObject>().Interact();
+                    }
+                    if (Input.GetTouch(0).phase == TouchPhase.Stationary || Input.GetTouch(0).phase == TouchPhase.Moved || Input.GetTouch(0).phase == TouchPhase.Began)
+                    {
+                        if (!hit.collider.GetComponent<InteractableObject>().interacted)
+                            hit.collider.GetComponent<InteractableObject>().PreInteract();
+                    }
                 }
-                if (Input.GetTouch(0).phase == TouchPhase.Stationary || Input.GetTouch(0).phase == TouchPhase.Moved || Input.GetTouch(0).phase == TouchPhase.Began)
+            }
+        }
+        if (nextScreen == null)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if(currentScreen == InfoController.controller)
                 {
-                    if(!hit.collider.GetComponent<InteractableObject>().interacted)
-                        hit.collider.GetComponent<InteractableObject>().PreInteract();
+                    InfoController.controller.GoBack();
+                }
+                if(currentScreen == GameController.controller)
+                {
+                    if(GameController.controller.paused)
+                    {
+                        GameController.controller.Resume();
+                    }
+                    else
+                    {
+                        GameController.controller.Pause();
+                    }
+                }
+                if(currentScreen == PostMenuController.controller)
+                {
+                    GoToScreen(MenuController.controller, 0.5f);
+                }
+                if(currentScreen == MenuController.controller)
+                {
+                    Application.Quit();
                 }
             }
         }
@@ -68,6 +157,8 @@ public class MainController : MonoBehaviour {
             controller = this;
         GoToScreen(IntroController.controller, 2f);
         LoadRecords();
+        LoadAd(null, null);
+        adTime = adTimer;
     }
 
     /// <summary>
@@ -94,6 +185,14 @@ public class MainController : MonoBehaviour {
         if (nextScreen == null)
         {
             nextScreen = controller;
+            if (nextScreen == GameController.controller)
+            {
+                shader.color = new Color(1, 1, 1, 1);
+            }
+            else
+            {
+                shader.color = new Color(0, 0, 0, 1);
+            }
             sTimer = t;
             inputTime = false;
         }
@@ -101,10 +200,7 @@ public class MainController : MonoBehaviour {
 
 	void Update () {
         //инпут
-        if (inputTime)
-        {
-            InputController();
-        }
+        InputController();
         //переход к следующему экрану
         if (nextScreen!=null)
         {
@@ -127,6 +223,18 @@ public class MainController : MonoBehaviour {
                         currentScreen.gameObject.SetActive(false);
                     nextScreen.Init();
                     nextScreen.gameObject.SetActive(true);
+                    if(currentScreen == GameController.controller)
+                    {
+                        if (adTime <= 0)
+                        {
+                            adTime = adTimer;
+                            ShowAd();
+                        }
+                        else
+                        {
+                            adTime--;
+                        }
+                    }
                     currentScreen = nextScreen;
                     currentCamera = currentScreen.cam;
                 }
@@ -149,10 +257,7 @@ public class MainController : MonoBehaviour {
     public void SaveRocords(int p)
     {
         bestPoints = p;
-        BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Create(Application.persistentDataPath + "/records.ko");
-        bf.Serialize(file, bestPoints);
-        file.Close();
+        PlayerPrefs.SetInt("record", p);
     }
 
     /// <summary>
@@ -160,17 +265,7 @@ public class MainController : MonoBehaviour {
     /// </summary>
     void LoadRecords()
     {
-        BinaryFormatter bf = new BinaryFormatter();
-        if (File.Exists(Application.persistentDataPath + "/records.ko"))
-        {
-            FileStream file = File.Open(Application.persistentDataPath + "/records.ko", FileMode.Open);
-            bestPoints = (int)bf.Deserialize(file);
-            file.Close();
-        }
-        else
-        {
-            SaveRocords(0);
-        }
+        bestPoints = PlayerPrefs.GetInt("record");
     }
 
 }

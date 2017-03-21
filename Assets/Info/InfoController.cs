@@ -11,6 +11,8 @@ public class InfoController : IController {
 
     IController backPoint;
 
+    public GameObject[] pages;
+
     public override void GameLoadInitialization()
     {
         if (controller == null)
@@ -29,6 +31,11 @@ public class InfoController : IController {
     /// </summary>
     public void GoBack()
     {
+        foreach(GameObject g in pages)
+        {
+            g.SetActive(false);
+        }
+        pages[0].SetActive(true);
         MainController.controller.GoToScreen(backPoint, 0);
     }
 }

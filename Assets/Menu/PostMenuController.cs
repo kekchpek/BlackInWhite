@@ -12,6 +12,8 @@ public class PostMenuController : IController {
 
     public Text points, best;
     public MenuButton startButton, infoButton, rateButton, soundButton, faceButton;
+    public bool rated;
+    public Texture sadFace, smileFace;
     
 
     public override void GameLoadInitialization()
@@ -28,6 +30,9 @@ public class PostMenuController : IController {
         best.text = "BEST:  " + MainController.controller.bestPoints.ToString();
         infoButton.Unpress();
         startButton.Unpress();
+        faceButton.SetTextureUp(sadFace);
+        rated = false;
+        rateButton.pressed = false;
     }
 
     /// <summary>
@@ -43,6 +48,16 @@ public class PostMenuController : IController {
         if (s == "Info")
         {
             MainController.controller.GoToScreen(InfoController.controller, 0);
+        }
+        if (s == "rate")
+        {
+            if (!rated)
+            {
+                Application.OpenURL("market://details?id=com.gameloft.android.ANMP.GloftPOHM");
+                rated = true;
+                rateButton.pressed = true;
+                faceButton.SetTextureUp(smileFace);
+            }
         }
     }
 

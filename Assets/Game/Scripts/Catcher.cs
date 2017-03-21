@@ -19,18 +19,20 @@ public class Catcher : MonoBehaviour {
     void OnTriggerEnter(Collider coll)
     {
         Cube cube = coll.GetComponent<Cube>();
-        if(cube!= null)
-        {
-            if(isWhite == cube.isWhite)
+        if (cube != null)
+            if (!cube.profit)
             {
-                GameController.controller.AddPoint();
-                cube.Profit();
+                if (isWhite == cube.isWhite)
+                {
+                    GameController.controller.AddPoint();
+                    cube.Profit();
+                }
+                else
+                {
+                    cube.Wrong();
+                    GameController.controller.End();
+                }
             }
-            else
-            {
-                GameController.controller.End();
-            }
-        }
     }
 
 }

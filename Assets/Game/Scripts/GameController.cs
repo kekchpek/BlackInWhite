@@ -21,7 +21,7 @@ public class GameController : IController {
     public GameObject cubePrefab;
     public GameObject pauseObj;
     public bool paused;
-    bool unpausedFrame;
+    public bool ended;
     public Text pointsText;
     public Text tPoints, tBest;
     private float doubleChance;
@@ -33,6 +33,7 @@ public class GameController : IController {
     private List<GameObject> cubes = new List<GameObject>();
     public GameObject leftButton, rightButton;
     bool isLeftPressed = false, isRightPressed = false;
+    public float endTime;
 
     /// <summary>
     /// Удаление падающего куба куба
@@ -64,6 +65,7 @@ public class GameController : IController {
         points = 0;
         pointsText.text = "0";
         paused = false;
+        ended = false;
         if (isRightPressed)
             PressRightButton();
         if (isLeftPressed)
@@ -72,7 +74,7 @@ public class GameController : IController {
 	
 
 	void Update () {
-        if (!paused)
+        if (!paused && !ended)
         {
             if (started)
             {
@@ -119,14 +121,13 @@ public class GameController : IController {
                 if (startTime <= 0)
                     started = true;
             }
-            MainController.controller.inputTime = true;
         }
 	}
 
     /// <summary>
     /// Включить паузу
     /// </summary>
-    void Pause()
+    public void Pause()
     {
         MainController.controller.inputTime = false;
         paused = true;
@@ -141,14 +142,23 @@ public class GameController : IController {
     {
         paused = false;
         pauseObj.SetActive(false);
-        unpausedFrame = true;
+        MainController.controller.SetInputTime(true);
     }
+    
 
     /// <summary>
     /// Конец игры
     /// </summary>
     public void End()
     {
+        MainController.controller.SetInputTime(false);
+        ended = true;
+        StartCoroutine(EndCorutine());
+    }
+
+    IEnumerator EndCorutine()
+    {
+        yield return new WaitForSeconds(endTime);
         MainController.controller.GoToScreen(PostMenuController.controller, 0.3f);
     }
 

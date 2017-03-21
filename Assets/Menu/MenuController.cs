@@ -9,6 +9,7 @@ public class MenuController : IController {
 
     public static MenuController controller;
     public MenuButton startBttn, soundBttn, infoBttn, rateBttn;
+    public bool rated;
 
     public override void GameLoadInitialization()
     {
@@ -20,6 +21,9 @@ public class MenuController : IController {
     {
         startBttn.Unpress();
         infoBttn.Unpress();
+        rateBttn.Unpress();
+        rated = false;
+        rateBttn.pressed = false;
     }
 
     /// <summary>
@@ -35,6 +39,15 @@ public class MenuController : IController {
         if (s == "Info")
         {
             MainController.controller.GoToScreen(InfoController.controller, 0f);
+        }
+        if(s == "rate")
+        {
+            if (!rated)
+            {
+                Application.OpenURL("market://details?id=com.gameloft.android.ANMP.GloftPOHM");
+                rated = true;
+                rateBttn.pressed = true;
+            }
         }
     }
 

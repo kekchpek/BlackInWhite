@@ -21,7 +21,7 @@ public class IntroController : IController {
         time -= Time.deltaTime;
         if(time<0)
         {
-            MainController.controller.GoToScreen(MenuController.controller, 2f);
+            MainController.controller.GoToScreen(MenuController.controller, 0.5f);
         }
 	}
 
