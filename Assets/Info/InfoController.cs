@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEngine.UI;
 using UnityEngine;
 
 /// <summary>
@@ -8,6 +7,11 @@ using UnityEngine;
 public class InfoController : IController {
 
     public static InfoController controller;
+    public bool swapping, swapped;
+    private int currentPage;
+    public const float fadeTime = 0.15f;
+    private float currentFadeTime;
+    public Image fadeImage;
 
     IController backPoint;
 
@@ -19,11 +23,59 @@ public class InfoController : IController {
             controller = this;
     }
 
+    public void Next()
+    {
+        if (!swapping)
+        {
+            currentPage++;
+            swapping = true;
+            currentFadeTime = 0f;
+        }
+    }
+
+    void Update()
+    {
+        if(swapping)
+        {
+            currentFadeTime += Time.deltaTime;
+            float r, g, b, a;
+            r = fadeImage.color.r;
+            g = fadeImage.color.g;
+            b = fadeImage.color.b;
+            if (swapped)
+                a = 1 - currentFadeTime / fadeTime;
+            else
+                a = currentFadeTime / fadeTime;
+            fadeImage.color = new Color(r, g, b, a);
+            if (currentFadeTime > fadeTime)
+            {
+                if (swapped)
+                {
+                    swapping = false;
+                    swapped = false;
+                }
+                else
+                {
+                    pages[currentPage].SetActive(true);
+                    pages[currentPage - 1].SetActive(false);
+                    swapped = true;
+                    currentFadeTime = 0f;
+                }
+            }
+        }
+    }
+
     public override void Init()
     {
         //запоминает в какой экран нужно вернуться
         base.Init();
         backPoint = MainController.controller.currentScreen;
+        currentPage = 0;
+        foreach (GameObject g in pages)
+        {
+            g.SetActive(false);
+        }
+        pages[0].SetActive(true);
     }
 
     /// <summary>
@@ -31,11 +83,6 @@ public class InfoController : IController {
     /// </summary>
     public void GoBack()
     {
-        foreach(GameObject g in pages)
-        {
-            g.SetActive(false);
-        }
-        pages[0].SetActive(true);
-        MainController.controller.GoToScreen(backPoint, 0);
+        MainController.controller.GoToScreen(backPoint, 0.3f);
     }
 }

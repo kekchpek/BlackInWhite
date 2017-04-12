@@ -8,6 +8,24 @@ using UnityEngine;
 public class GameButton : InteractableObject {
 
     public string function;
+    public Vector3 currentPosition;
+    public float speed;
+
+    void Start()
+    {
+        currentPosition = transform.position;
+    }
+
+    void Update()
+    {
+        if(currentPosition != transform.position)
+        {
+            if (Vector3.Distance(transform.position, currentPosition) < speed)
+                transform.position = currentPosition;
+            else
+                transform.position += (currentPosition - transform.position).normalized * speed;
+        }
+    }
 
     public override void Interact()
     {

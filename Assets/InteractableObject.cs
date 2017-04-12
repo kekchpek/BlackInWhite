@@ -10,6 +10,7 @@ public class InteractableObject : MonoBehaviour {
 
     public bool interacted;
 
+
     /// <summary>
     /// Нажатие
     /// </summary>

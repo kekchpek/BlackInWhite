@@ -12,6 +12,19 @@ public class Catcher : MonoBehaviour {
     /// </summary>
     public bool isWhite;
 
+    public AudioSource audioSource;
+    public AudioClip endAudio;
+    public AudioClip[] catchAudios;
+
+    void Start()
+    {
+        endAudio = MainController.controller.endAudio;
+        catchAudios = MainController.controller.buttonAudiosDown;
+        audioSource = MainController.controller.audioSources.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.volume = 0.27f;
+    }
+
     /// <summary>
     /// Ловля кубов
     /// </summary>
@@ -26,10 +39,17 @@ public class Catcher : MonoBehaviour {
                 {
                     GameController.controller.AddPoint();
                     cube.Profit();
+                    audioSource.clip = catchAudios[Random.Range(0, catchAudios.Length)];
+                    audioSource.Play();
                 }
                 else
                 {
                     cube.Wrong();
+                    if(!GameController.controller.ended)
+                    {
+                        audioSource.clip = endAudio;
+                        audioSource.Play();
+                    }
                     GameController.controller.End();
                 }
             }

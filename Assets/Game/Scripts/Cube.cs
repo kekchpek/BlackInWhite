@@ -9,8 +9,6 @@ public class Cube : MonoBehaviour {
 
     public bool isWhite;
     bool inited = false;
-    public float blinkTimer;
-    private float blinkTime;
     private float scale;
     bool isRed = false;
     public bool profit;
@@ -19,6 +17,9 @@ public class Cube : MonoBehaviour {
     private MeshRenderer meshRenderer;
     public float fadeTime;
     float curretnFadeTime;
+    public float removeDist;
+    float dist;
+    bool disapeared;
 
     /// <summary>
     /// Покрасить в чёрный
@@ -73,60 +74,67 @@ public class Cube : MonoBehaviour {
         }
     }
 
+    public void Disapear(float t)
+    {
+        if (!disapeared)
+        {
+            curretnFadeTime = 0;
+            disapeared = true;
+            fadeTime = t;
+        }
+    }
+
     public void Wrong()
     {
         if(!wrong)
         {
             wrong = true;
-            blinkTime = 0;
+            Disapear(1f);
+            SetRed();
         }
     }
 
 	void Update () {
-        if (!GameController.controller.paused && !GameController.controller.ended)
+        if (!GameController.controller.paused)
         {
-            if (profit)
+            if (!disapeared)
             {
-                //удаление после ловли
-                transform.position += Vector3.down * GameController.controller.speed * Time.deltaTime;
-                curretnFadeTime += Time.deltaTime;
-                if (curretnFadeTime < fadeTime)
-                    meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, 1 - curretnFadeTime / fadeTime);
+                if (profit)
+                {
+                    //удаление после ловли
+                    transform.position += Vector3.down * 2.5f * Time.deltaTime;
+                    dist += Time.deltaTime * 2.5f;
+                    if (dist < removeDist)
+                        transform.localScale = Vector3.one * scale * (1 - dist / removeDist);
+                    else
+                        Destroy(gameObject);
+                }
                 else
-                    Destroy(gameObject);
+                {
+                    //падение
+                    if (fadeTime > curretnFadeTime)
+                    {
+                        curretnFadeTime += Time.deltaTime;
+                        meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, curretnFadeTime / fadeTime);
+                    }
+                    else
+                    {
+                        curretnFadeTime = fadeTime;
+                        meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, curretnFadeTime / fadeTime);
+                    }
+                    transform.position += Vector3.down * GameController.controller.speed * Time.deltaTime;
+                }
             }
             else
             {
-                //падение
-                if(fadeTime > curretnFadeTime)
+                curretnFadeTime += Time.deltaTime;
+                if (curretnFadeTime < fadeTime)
                 {
-                    curretnFadeTime += Time.deltaTime;
-                    meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, curretnFadeTime / fadeTime);
+                    meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, 1 - curretnFadeTime / fadeTime);
                 }
                 else
                 {
-                    curretnFadeTime = fadeTime;
-                    meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, curretnFadeTime / fadeTime);
-                }
-                transform.position += Vector3.down * GameController.controller.speed * Time.deltaTime;
-            }
-        }
-        if (wrong)
-        {
-            blinkTime -= Time.deltaTime;
-            if (blinkTime <= 0)
-            {
-                blinkTime += blinkTimer;
-                if (isRed)
-                {
-                    if (isWhite)
-                        SetWhite();
-                    else
-                        SetBlack();
-                }
-                else
-                {
-                    SetRed();
+                    Destroy(gameObject);
                 }
             }
         }

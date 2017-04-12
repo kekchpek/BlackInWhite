@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class GameController : IController {
     
     public Transform[] CubeSpawns;
+    public GameButton right, left;
     public float speed;
     public float startSpeed;
     public float acceleration;
@@ -35,6 +36,9 @@ public class GameController : IController {
     bool isLeftPressed = false, isRightPressed = false;
     public float endTime;
 
+    public AudioSource leftBttnAudio, rightBttnAudio;
+    public AudioClip[] upAudios, downAudios;
+
     /// <summary>
     /// Удаление падающего куба куба
     /// </summary>
@@ -42,6 +46,16 @@ public class GameController : IController {
     public void RemoveCube(GameObject obj)
     {
         cubes.Remove(obj);
+    }
+
+    void Start()
+    {
+        downAudios = MainController.controller.buttonAudiosDown;
+        upAudios = MainController.controller.buttonAudiosUp;
+        leftBttnAudio = MainController.controller.audioSources.AddComponent<AudioSource>();
+        rightBttnAudio = MainController.controller.audioSources.AddComponent<AudioSource>();
+        leftBttnAudio.volume = rightBttnAudio.volume = 0.27f;
+        rightBttnAudio.playOnAwake = leftBttnAudio.playOnAwake = false;
     }
 
     public override void GameLoadInitialization()
@@ -64,7 +78,7 @@ public class GameController : IController {
         doubleChance = startDoubleChance;
         points = 0;
         pointsText.text = "0";
-        paused = false;
+        Resume();
         ended = false;
         if (isRightPressed)
             PressRightButton();
@@ -152,15 +166,17 @@ public class GameController : IController {
     public void End()
     {
         MainController.controller.SetInputTime(false);
+        MainController.controller.loopMusicOn = false;
+        MainController.controller.loopAudio.Stop();
         ended = true;
-        StartCoroutine(EndCorutine());
+        MainController.controller.GoToScreen(PostMenuController.controller, 1.5f, 0.5f);
+        foreach(GameObject c in cubes)
+        {
+            if(c != null)
+                c.GetComponent<Cube>().Disapear(0.5f);
+        }
     }
 
-    IEnumerator EndCorutine()
-    {
-        yield return new WaitForSeconds(endTime);
-        MainController.controller.GoToScreen(PostMenuController.controller, 0.3f);
-    }
 
     /// <summary>
     /// Добавить одно очко
@@ -169,6 +185,12 @@ public class GameController : IController {
     {
         points++;
         pointsText.text = points.ToString();
+        if (points > 200)
+            MainController.controller.SetLoopLevelAudio(3);
+        else if (points > 70)
+            MainController.controller.SetLoopLevelAudio(2);
+        else if (points > 30)
+            MainController.controller.SetLoopLevelAudio(1);
     }
 
     /// <summary>
@@ -186,6 +208,9 @@ public class GameController : IController {
     void PressLeftButton()
     {
         leftButton.transform.position = new Vector3(leftButton.transform.position.x, leftButton.transform.position.y, -leftButton.transform.position.z);
+        left.currentPosition = new Vector3(left.currentPosition.x, left.currentPosition.y, -left.currentPosition.z);
+        leftBttnAudio.clip = downAudios[Random.Range(0, downAudios.Length)];
+        leftBttnAudio.Play();
         isLeftPressed = !isLeftPressed;
     }
 
@@ -194,8 +219,11 @@ public class GameController : IController {
     /// </summary>
     void PressRightButton()
     {
-        isRightPressed = !isRightPressed;
         rightButton.transform.position = new Vector3(rightButton.transform.position.x, rightButton.transform.position.y, -rightButton.transform.position.z);
+        right.currentPosition = new Vector3(right.currentPosition.x, right.currentPosition.y, -right.currentPosition.z);
+        rightBttnAudio.clip = upAudios[Random.Range(0, upAudios.Length)];
+        rightBttnAudio.Play();
+        isRightPressed = !isRightPressed;
     }
 
 
