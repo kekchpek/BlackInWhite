@@ -227,11 +227,11 @@ public class MainController : MonoBehaviour {
             nextScreen = controller;
             if (nextScreen == GameController.controller || nextScreen == InfoController.controller)
             {
-                fadeImage.color = new Color(1, 1, 1, 1);
+                fadeImage.color = new Color(1, 1, 1, 0);
             }
             else
             {
-                fadeImage.color = new Color(0, 0, 0, 1);
+                fadeImage.color = new Color(0, 0, 0, 0);
             }
             sTimer = t;
             sTimer2 = t2;

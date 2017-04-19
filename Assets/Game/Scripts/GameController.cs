@@ -9,38 +9,41 @@ using UnityEngine.UI;
 /// </summary>
 public class GameController : IController {
     
-    public Transform[] CubeSpawns;
-    public GameButton right, left;
-    public float speed;
-    public float startSpeed;
-    public float acceleration;
-    public float waitStart;
-    public float minDist, maxDist;
-    public float startDoubleChance;
-    public float accelerationDoubleChance;
-    public float maxDoubleChance;
-    public GameObject cubePrefab;
-    public GameObject pauseObj;
-    public bool paused;
-    public bool ended;
-    public Text pointsText;
-    public Text tPoints, tBest;
-    private float doubleChance;
-    float needDist, dist; 
-    float startTime;
-    bool started;
-    public static GameController controller;
-    public int points;
-    private List<GameObject> cubes = new List<GameObject>();
-    public GameObject leftButton, rightButton;
-    bool isLeftPressed = false, isRightPressed = false;
-    public float endTime;
+    public Transform[] CubeSpawns;//спауны кубов
+    public GameButton right, left;//кнопки
+    public float speed;//скорость с которой падают кубы
+    public float startSpeed;//начальная скорость падения кубов
+    public float acceleration;//ускорения кубов
+    public float minDist, maxDist;//минимальное и максимаьное значение дистанции после прохождения которой начинает падать следующий куб
+                                  //(расстояние между падающими кубами)
+    public float startDoubleChance;//начальный шанс генерации сразу вух кубов
+    private float doubleChance;//шанс генерации сразу двух кубов
+    public float accelerationDoubleChance;//увеличение шанса подения двух кубов со временем
+    public float maxDoubleChance;//максимальный шанс падения двух кубов
+    public GameObject cubePrefab;//префаб куба
+    public GameObject pauseObj;//объект-пауза
+    public bool paused;//на паузе ли игра
+    public bool ended;//закончилась ли игра(пойман неправильный куб)
+    public Text pointsText;//текст со счётом
+    public Text tPoints, tBest;//текст со счётом и с рекордом соответственно на паузе
+    float needDist;//неободимое расстояние пройденное последним созданым кубом для создание следующего
+    float dist;//расстояние которое прошёл последний созданый куб
+    public float waitStart;//сколько секунд проходит перед тем как упадёт первый куб
+    float startTime;//время которое прошло с начала игры
+    bool started;//начали ли падать кубы
+    public int points;//кол-во очков
+    private List<GameObject> cubes = new List<GameObject>();//все кубы, которые есть в игре на данный момент
+    public GameObject leftButton, rightButton;//Catcher'ы кнопок
+    bool isLeftPressed = false, isRightPressed = false;//флаги "нажатости" кнопок
 
-    public AudioSource leftBttnAudio, rightBttnAudio;
-    public AudioClip[] upAudios, downAudios;
+    public AudioSource leftBttnAudio, rightBttnAudio;//аудиосоурсы кнопок
+    public AudioClip[] leftAudios, rightAudios;//аудиоклипы кнопок
+
+    public static GameController controller;//статическая переменная для доступа к контроллеру
+
 
     /// <summary>
-    /// Удаление падающего куба куба
+    /// Удаление падающего куба из списка кубов в игре
     /// </summary>
     /// <param name="obj"> куб</param>
     public void RemoveCube(GameObject obj)
@@ -50,16 +53,21 @@ public class GameController : IController {
 
     void Start()
     {
-        downAudios = MainController.controller.buttonAudiosDown;
-        upAudios = MainController.controller.buttonAudiosUp;
+        //настройка аудио
+        #region
+        rightAudios = MainController.controller.buttonAudiosDown;
+        leftAudios = MainController.controller.buttonAudiosUp;
         leftBttnAudio = MainController.controller.audioSources.AddComponent<AudioSource>();
         rightBttnAudio = MainController.controller.audioSources.AddComponent<AudioSource>();
-        leftBttnAudio.volume = rightBttnAudio.volume = 0.27f;
+        leftBttnAudio.volume = 0.27f;
+        rightBttnAudio.volume = 0.19f;
         rightBttnAudio.playOnAwake = leftBttnAudio.playOnAwake = false;
+        #endregion
     }
 
     public override void GameLoadInitialization()
     {
+        //обеспечиваем доступ к контроллеру через статическую переменную
         if (controller == null)
             controller = this;
     }
@@ -209,7 +217,7 @@ public class GameController : IController {
     {
         leftButton.transform.position = new Vector3(leftButton.transform.position.x, leftButton.transform.position.y, -leftButton.transform.position.z);
         left.currentPosition = new Vector3(left.currentPosition.x, left.currentPosition.y, -left.currentPosition.z);
-        leftBttnAudio.clip = downAudios[Random.Range(0, downAudios.Length)];
+        leftBttnAudio.clip = leftAudios[Random.Range(0, rightAudios.Length)];
         leftBttnAudio.Play();
         isLeftPressed = !isLeftPressed;
     }
@@ -221,7 +229,7 @@ public class GameController : IController {
     {
         rightButton.transform.position = new Vector3(rightButton.transform.position.x, rightButton.transform.position.y, -rightButton.transform.position.z);
         right.currentPosition = new Vector3(right.currentPosition.x, right.currentPosition.y, -right.currentPosition.z);
-        rightBttnAudio.clip = upAudios[Random.Range(0, upAudios.Length)];
+        rightBttnAudio.clip = rightAudios[Random.Range(0, leftAudios.Length)];
         rightBttnAudio.Play();
         isRightPressed = !isRightPressed;
     }

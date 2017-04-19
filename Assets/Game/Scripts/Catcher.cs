@@ -12,17 +12,20 @@ public class Catcher : MonoBehaviour {
     /// </summary>
     public bool isWhite;
 
+
     public AudioSource audioSource;
-    public AudioClip endAudio;
-    public AudioClip[] catchAudios;
+    public AudioClip endAudio;//звук при конце игры
+    public AudioClip[] catchAudios;//звук при правильно пойманом кубике
 
     void Start()
     {
+        //настраиваем звук
+        #region soundSet
         endAudio = MainController.controller.endAudio;
         catchAudios = MainController.controller.buttonAudiosDown;
         audioSource = MainController.controller.audioSources.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
-        audioSource.volume = 0.27f;
+        #endregion soundSet
     }
 
     /// <summary>
@@ -33,23 +36,29 @@ public class Catcher : MonoBehaviour {
     {
         Cube cube = coll.GetComponent<Cube>();
         if (cube != null)
-            if (!cube.profit)
+            if (!cube.profit)//если куб ещё не пойман
             {
-                if (isWhite == cube.isWhite)
+                if (isWhite == cube.isWhite)//если цвет совпа
                 {
                     GameController.controller.AddPoint();
-                    cube.Profit();
+                    cube.Profit();//отметить куб как пойманый
+                    #region playSound
+                    audioSource.volume = 0.27f;
                     audioSource.clip = catchAudios[Random.Range(0, catchAudios.Length)];
                     audioSource.Play();
+                    #endregion playSound
                 }
                 else
                 {
-                    cube.Wrong();
+                    cube.Wrong();//отметить куб как неправильно пойманый
+                    #region playSound
                     if(!GameController.controller.ended)
                     {
+                        audioSource.volume = 0.5f;
                         audioSource.clip = endAudio;
                         audioSource.Play();
                     }
+                    #endregion playSound
                     GameController.controller.End();
                 }
             }

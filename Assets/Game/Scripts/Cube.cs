@@ -7,19 +7,19 @@ using UnityEngine;
 /// </summary>
 public class Cube : MonoBehaviour {
 
-    public bool isWhite;
-    bool inited = false;
-    private float scale;
-    bool isRed = false;
-    public bool profit;
-    bool wrong;
-    public Material whiteMaterial, blackMaterial, redMaterial;
-    private MeshRenderer meshRenderer;
-    public float fadeTime;
-    float curretnFadeTime;
-    public float removeDist;
-    float dist;
-    bool disapeared;
+    public bool isWhite;//логический чвет
+    bool inited = false;//проинициализирован
+    private float scale;//размер
+    bool isRed = false;//покраснел ли(при этом логический цвет не меняется)
+    public bool profit;//отмечен как пойманый
+    bool wrong;//отмечен как неправильно пойманый
+    public Material whiteMaterial, blackMaterial, redMaterial;//кэшируем материалы
+    private MeshRenderer meshRenderer;//кэшируем меш
+    public float fadeTime;//время за которое исчезает(фэйдом)
+    float curretnFadeTime;//время которое прошло с момента начала исчезновения(фэйдом)
+    public float removeDist;//дистанция пройдя которую кубик исчезнет(уменьшением)
+    float dist;//дистанция которую кубик прошол с начала момента исчезновения(уменьшением)
+    bool disapeared;//исчезает ли в данный момент(фэйдом)
 
     /// <summary>
     /// Покрасить в чёрный
@@ -29,9 +29,10 @@ public class Cube : MonoBehaviour {
         scale = transform.localScale.x;
         isWhite = false;
         isRed = false;
-        meshRenderer = GetComponent<MeshRenderer>();
+        if (meshRenderer == null)//кэшируем меш
+            meshRenderer = GetComponent<MeshRenderer>();
         meshRenderer.material = new Material(blackMaterial);
-        if (!inited)
+        if (!inited)//если не инициализирован то задать начальный цвет полностью прозрачным
         {
             meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, 0);
             inited = true;
@@ -46,9 +47,10 @@ public class Cube : MonoBehaviour {
         scale = transform.localScale.x;
         isWhite = true;
         isRed = false;
-        meshRenderer = GetComponent<MeshRenderer>();
+        if (meshRenderer == null)//кэшируем меш
+            meshRenderer = GetComponent<MeshRenderer>();
         meshRenderer.material = new Material(whiteMaterial);
-        if (!inited)
+        if (!inited)//если не инициализирован то задать начальный цвет полностью прозрачным
         {
             meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, 0);
             inited = true;
@@ -58,7 +60,6 @@ public class Cube : MonoBehaviour {
     void SetRed()
     {
         isRed = true;
-        meshRenderer = GetComponent<MeshRenderer>();
         meshRenderer.material = new Material(redMaterial);
     }
 
@@ -70,10 +71,13 @@ public class Cube : MonoBehaviour {
         if(!profit)
         {
             profit = true;
-            curretnFadeTime = 0;
         }
     }
 
+    /// <summary>
+    /// Исчезновение(фэйдом)
+    /// </summary>
+    /// <param name="t">время исчезновения</param>
     public void Disapear(float t)
     {
         if (!disapeared)
@@ -84,25 +88,29 @@ public class Cube : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Отметить как неправильно пойманый
+    /// </summary>
     public void Wrong()
     {
         if(!wrong)
         {
             wrong = true;
+            //исчезает на 0.5сек больше чем остальные
             Disapear(1f);
-            SetRed();
+            SetRed();//становится крсным
         }
     }
 
 	void Update () {
-        if (!GameController.controller.paused)
+        if (!GameController.controller.paused)//если игран не на паузе
         {
-            if (!disapeared)
+            if (!disapeared)//если не исчезает(фэйдом)
             {
-                if (profit)
+                if (profit)//если пойман
                 {
-                    //удаление после ловли
-                    transform.position += Vector3.down * 2.5f * Time.deltaTime;
+                    //исчезновение(уменьшением)
+                    transform.position += Vector3.down * 2.5f * Time.deltaTime;//при этом скорость падения фиксировано мала
                     dist += Time.deltaTime * 2.5f;
                     if (dist < removeDist)
                         transform.localScale = Vector3.one * scale * (1 - dist / removeDist);
@@ -111,8 +119,9 @@ public class Cube : MonoBehaviour {
                 }
                 else
                 {
-                    //падение
-                    if (fadeTime > curretnFadeTime)
+                    //появление(фэйдом)
+                    #region fadeBecome
+                    if (fadeTime > curretnFadeTime)//изначально currentFadeTime равен нулю и если он не исчезает то появляется
                     {
                         curretnFadeTime += Time.deltaTime;
                         meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, curretnFadeTime / fadeTime);
@@ -122,7 +131,8 @@ public class Cube : MonoBehaviour {
                         curretnFadeTime = fadeTime;
                         meshRenderer.material.color = new Color(meshRenderer.material.color.r, meshRenderer.material.color.g, meshRenderer.material.color.b, curretnFadeTime / fadeTime);
                     }
-                    transform.position += Vector3.down * GameController.controller.speed * Time.deltaTime;
+                    #endregion
+                    transform.position += Vector3.down * GameController.controller.speed * Time.deltaTime;//падение
                 }
             }
             else

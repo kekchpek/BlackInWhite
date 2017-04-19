@@ -17,9 +17,13 @@ public class MenuButton : InteractableObject {
     public Texture textureUp, textureDown;
     public bool onIt;
     public bool pressed;
+    bool pressFlag;
+    public BoxCollider boxCollider;
     
     void Start()
     {
+        pressFlag = false;
+        boxCollider = GetComponent<BoxCollider>();
         downAudios = MainController.controller.buttonAudiosDown;
         upAudios = MainController.controller.buttonAudiosUp;
         audioSource = MainController.controller.audioSources.AddComponent<AudioSource>();
@@ -75,20 +79,21 @@ public class MenuButton : InteractableObject {
     /// </summary>
     public void Press()
     {
+        pressFlag = true;
         transform.position = posDown;
+        boxCollider.center = new Vector3(0, 0, -0.5f);
         mat.SetTexture("_MainTex", textureDown);
-        Debug.Log("Pressed");
     }
 
     void Update()
     {
         if(!onIt && !pressed)
         {
-            Unpress();
+            if(pressFlag) Unpress();
         }
         else
         {
-            Press();
+            if(!pressFlag) Press();
         }
         onIt = false;
     }
@@ -100,6 +105,8 @@ public class MenuButton : InteractableObject {
     {
         if (mat != null)
         {
+            pressFlag = false;
+            boxCollider.center = new Vector3(0, 0, 0);
             transform.position = posUp;
             mat.SetTexture("_MainTex", textureUp);
         }
