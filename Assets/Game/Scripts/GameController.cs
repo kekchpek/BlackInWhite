@@ -59,8 +59,8 @@ public class GameController : IController {
         leftAudios = MainController.controller.buttonAudiosUp;
         leftBttnAudio = MainController.controller.audioSources.AddComponent<AudioSource>();
         rightBttnAudio = MainController.controller.audioSources.AddComponent<AudioSource>();
-        leftBttnAudio.volume = 0.27f;
-        rightBttnAudio.volume = 0.19f;
+        leftBttnAudio.volume = 0.40f;
+        rightBttnAudio.volume = 0.14f;
         rightBttnAudio.playOnAwake = leftBttnAudio.playOnAwake = false;
         #endregion
     }
@@ -74,11 +74,11 @@ public class GameController : IController {
 
 	public override void Init () {
         //"обнуление" экрана, возвращение его в первозданный вид
-        foreach (GameObject obj in cubes)
+        foreach (GameObject obj in cubes)//уничтожаем все кубы
         {
             Destroy(obj);
         }
-        cubes.Clear();
+        cubes.Clear();//удаляем ссылки в списке
         speed = startSpeed;
         dist = 0;
         startTime = waitStart;
@@ -88,6 +88,7 @@ public class GameController : IController {
         pointsText.text = "0";
         Resume();
         ended = false;
+        //отжимаем кнопки
         if (isRightPressed)
             PressRightButton();
         if (isLeftPressed)
@@ -105,24 +106,26 @@ public class GameController : IController {
                 speed += acceleration * Time.deltaTime;
                 if (doubleChance < maxDoubleChance)
                     doubleChance += accelerationDoubleChance * Time.deltaTime;
-                if (dist <= 0)
+                else
+                    doubleChance = maxDoubleChance;
+                if (dist <= 0)//если пора создать следующий куб
                 {
-                    dist = Random.Range(minDist, maxDist);
+                    dist = Random.Range(minDist, maxDist);//задаём дистанцию через которую создастся следующий куб
                     if (Random.Range(0f, 1f) > doubleChance)
                     {
                         int rand = Random.Range(0, 2);
-                        Vector3 pos = CubeSpawns[rand].position;
+                        Vector3 pos = CubeSpawns[rand].position;//выбираем случайный спаун и создаём там куб
                         GameObject obj = (GameObject)Instantiate(cubePrefab, pos, Quaternion.identity);
                         obj.transform.SetParent(transform);
                         cubes.Add(obj);
-                        if (Random.Range(0, 2) == 1)
+                        if (Random.Range(0, 2) == 1)//задаём кубу случайный цвет
                             obj.GetComponent<Cube>().SetBlack();
                         else
                             obj.GetComponent<Cube>().SetWhite();
                     }
                     else
                     {
-                        for (int i = 0; i < 2; i++)
+                        for (int i = 0; i < 2; i++)//создаём кубы сразу в двух спаунах
                         {
                             Vector3 pos = CubeSpawns[i].position;
                             GameObject obj = (GameObject)Instantiate(cubePrefab, pos, Quaternion.identity);
@@ -178,7 +181,7 @@ public class GameController : IController {
         MainController.controller.loopAudio.Stop();
         ended = true;
         MainController.controller.GoToScreen(PostMenuController.controller, 1.5f, 0.5f);
-        foreach(GameObject c in cubes)
+        foreach(GameObject c in cubes)//все кубы исчезают(фэйдом)
         {
             if(c != null)
                 c.GetComponent<Cube>().Disapear(0.5f);
@@ -193,7 +196,7 @@ public class GameController : IController {
     {
         points++;
         pointsText.text = points.ToString();
-        if (points > 200)
+        if (points > 150)//меняем фоновую музыку
             MainController.controller.SetLoopLevelAudio(3);
         else if (points > 70)
             MainController.controller.SetLoopLevelAudio(2);
@@ -206,6 +209,7 @@ public class GameController : IController {
     /// </summary>
     void BuildPause()
     {
+        //текст очков и рекорда
         tPoints.text = points.ToString();
         tBest.text = "BEST:  " + MainController.controller.bestPoints.ToString();
     }

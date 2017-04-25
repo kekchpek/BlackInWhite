@@ -11,14 +11,14 @@ public class MenuButton : InteractableObject {
     public AudioSource audioSource;
     public AudioClip[] downAudios, upAudios;
 
-    public Vector3 posUp, posDown;
-    public string function;
-    Material mat;
-    public Texture textureUp, textureDown;
-    public bool onIt;
-    public bool pressed;
-    bool pressFlag;
-    public BoxCollider boxCollider;
+    public Vector3 posUp, posDown;//позиции в нажатом и отжатом состоянии
+    public string function;//функция которую выплняет кнопка
+    Material mat;//кэшированый материал
+    public Texture textureUp, textureDown;//текстуры в нажатом и отжатом состоянии
+    public bool onIt;//нажата ли кнопка пальцем
+    public bool pressed;//находит ся ли кнопка в нажатом состоянии
+    bool pressFlag;//нажата ли кнопка(не важно пальцем или в нажатом состоянии
+    public BoxCollider boxCollider;//коллайдер кнопки
     
     void Start()
     {
@@ -37,11 +37,16 @@ public class MenuButton : InteractableObject {
         }
     }
 
+    /// <summary>
+    /// Задаёт текстуру в ненажатом положении
+    /// </summary>
+    /// <param name="t"></param>
     public void SetTextureUp(Texture t)
     {
         if(mat == null)
         {
-            Start();
+            mat = new Material(transform.GetChild(0).GetComponent<MeshRenderer>().material);
+            transform.GetChild(0).GetComponent<MeshRenderer>().material = mat;
         }
         textureUp = t;
         if(transform.position == posUp)
@@ -50,6 +55,10 @@ public class MenuButton : InteractableObject {
         }
     }
 
+
+    /// <summary>
+    /// Вызов функционала кнопки
+    /// </summary>
     public override void Interact()
     {
         base.Interact();
@@ -68,6 +77,9 @@ public class MenuButton : InteractableObject {
         }
     }
 
+    /// <summary>
+    /// Нажатие на кнопку вез вызова функционала(спадает на следующий кадр)
+    /// </summary>
     public override void PreInteract()
     {
         base.PreInteract();
@@ -79,21 +91,24 @@ public class MenuButton : InteractableObject {
     /// </summary>
     public void Press()
     {
-        pressFlag = true;
-        transform.position = posDown;
-        boxCollider.center = new Vector3(0, 0, -0.5f);
-        mat.SetTexture("_MainTex", textureDown);
+        if (!pressFlag && mat != null)
+        {
+            pressFlag = true;
+            transform.position = posDown;
+            boxCollider.center = new Vector3(0, 0, -0.5f);
+            mat.SetTexture("_MainTex", textureDown);
+        }
     }
 
     void Update()
     {
         if(!onIt && !pressed)
         {
-            if(pressFlag) Unpress();
+            Unpress();
         }
         else
         {
-            if(!pressFlag) Press();
+            Press();
         }
         onIt = false;
     }
@@ -103,7 +118,7 @@ public class MenuButton : InteractableObject {
     /// </summary>
     public void Unpress()
     {
-        if (mat != null)
+        if (mat != null && pressFlag)
         {
             pressFlag = false;
             boxCollider.center = new Vector3(0, 0, 0);

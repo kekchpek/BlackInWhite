@@ -6,16 +6,16 @@ using UnityEngine;
 /// </summary>
 public class InfoController : IController {
 
-    public static InfoController controller;
-    public bool swapping, swapped;
-    private int currentPage;
-    public const float fadeTime = 0.15f;
-    private float currentFadeTime;
-    public Image fadeImage;
+    public static InfoController controller;//статическая ссылка на этот контроллер
+    public bool swapping, swapped;//происходит ли переход от одной страницы к другой
+    private int currentPage;//номер текущей страницы обучения
+    public const float fadeTime = 0.15f;//время которое тратится на свап страниц
+    private float currentFadeTime;//переменная для расчёта времени перехода от страницы к странице
+    public Image fadeImage;//картинка спомощью которой обеспечиваем переход фэйдами
 
-    IController backPoint;
+    IController backPoint;//к какому экрану возвращаемся после конца страниц
 
-    public GameObject[] pages;
+    public GameObject[] pages;//страницы
 
     public override void GameLoadInitialization()
     {
@@ -23,6 +23,9 @@ public class InfoController : IController {
             controller = this;
     }
 
+    /// <summary>
+    /// Переход к следующей странице
+    /// </summary>
     public void Next()
     {
         if (!swapping)
@@ -37,17 +40,18 @@ public class InfoController : IController {
     {
         if(swapping)
         {
+            //вычисляем нужный цвет
             currentFadeTime += Time.deltaTime;
             float r, g, b, a;
             r = fadeImage.color.r;
             g = fadeImage.color.g;
             b = fadeImage.color.b;
-            if (swapped)
+            if (swapped)//фэйд/анфэйд
                 a = 1 - currentFadeTime / fadeTime;
             else
                 a = currentFadeTime / fadeTime;
             fadeImage.color = new Color(r, g, b, a);
-            if (currentFadeTime > fadeTime)
+            if (currentFadeTime > fadeTime)//свапаем экран если прошло нужное время и экран полностью закрылся нашей картинкой
             {
                 if (swapped)
                 {
@@ -70,6 +74,7 @@ public class InfoController : IController {
         //запоминает в какой экран нужно вернуться
         base.Init();
         backPoint = MainController.controller.currentScreen;
+        //переходим на первую страницу
         currentPage = 0;
         foreach (GameObject g in pages)
         {

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Интерфейс для создания контроллеров
+/// </summary>
 public class IController : MonoBehaviour {
 
     public Camera cam;

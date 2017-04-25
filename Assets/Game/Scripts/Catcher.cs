@@ -54,7 +54,7 @@ public class Catcher : MonoBehaviour {
                     #region playSound
                     if(!GameController.controller.ended)
                     {
-                        audioSource.volume = 0.5f;
+                        audioSource.volume = 1f;
                         audioSource.clip = endAudio;
                         audioSource.Play();
                     }
