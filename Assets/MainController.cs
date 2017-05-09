@@ -40,8 +40,9 @@ public class MainController : MonoBehaviour {
         {
             loopAudio.clip = levelLoopAudios[lvl];
             loopAudio.Stop();
-            loopAudio.Play();
         }
+        if(!loopAudio.isPlaying)
+            loopAudio.Play();
     }
 
 
@@ -249,8 +250,6 @@ public class MainController : MonoBehaviour {
 
     void Update()
     {
-        if (!loopAudio.isPlaying && loopMusicOn)
-            loopAudio.Play();
         //инпут
         InputController();
         if (nextScreen != null)//переход к следующему экрану

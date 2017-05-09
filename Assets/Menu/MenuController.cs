@@ -62,7 +62,7 @@ public class MenuController : IController {
         {
             if (!rated)//отправляем на страницу приложения и делаем лицо улыбающимся
             {
-                Application.OpenURL("market://details?id=com.gameloft.android.ANMP.GloftPOHM");
+                Application.OpenURL("market://details?id=com.DARTEKZ.BlackInWhite");
                 rated = true;
                 rateBttn.pressed = true;
                 faceButton.SetTextureUp(smileFace);
